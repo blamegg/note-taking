@@ -27,7 +27,7 @@ export const AddNotes = () => {
       return null;
     }
     addNote(data);
-    event.target.reset();
+    // event.target.reset();
   };
 
   const addNote = async (data: IData) => {

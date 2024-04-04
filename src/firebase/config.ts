@@ -1,18 +1,20 @@
-import { initializeApp } from "firebase/app";
+import { initializeApp } from "@firebase/app";
 import { getFirestore } from "@firebase/firestore";
+import { getAuth } from "firebase/auth";
 // import { getAnalytics } from "firebase/analytics";
 
 const firebaseConfig = {
-  apiKey: "AIzaSyBFy3-8O6veV3PrUUxdEFHzU8ikZHzLs6k",
-  authDomain: "note-taking-app-121f3.firebaseapp.com",
-  projectId: "note-taking-app-121f3",
-  storageBucket: "note-taking-app-121f3.appspot.com",
-  messagingSenderId: "865212009930",
-  appId: "1:865212009930:web:f17bd7294444378de61333",
-  measurementId: "G-7RZZ33HEGK",
+  apiKey: process.env.NEXT_PUBLIC_APIKEY,
+  authDomain: process.env.NEXT_PUBLIC_AUTHDOMAIN,
+  projectId: process.env.NEXT_PUBLIC_PROJECTID,
+  storageBucket: process.env.NEXT_PUBLIC_STORAGEBUCKET,
+  messagingSenderId: process.env.NEXT_PUBLIC_MESSAGINGSENDERID,
+  appId: process.env.NEXT_PUBLIC_APPID,
+  measurementId: process.env.NEXT_PUBLIC_MEASUREMENTID,
 };
 
 const app = initializeApp(firebaseConfig);
 // const analytics = getAnalytics(app);
 
 export const db = getFirestore(app);
+export const auth = getAuth(app);

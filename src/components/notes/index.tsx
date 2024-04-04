@@ -1,5 +1,6 @@
 "use client";
-import React, { useEffect, useState } from "react";
+import React, { useContext, useEffect, useState, useLayoutEffect } from "react";
+import { redirect } from "next/navigation";
 import { db } from "@/firebase/config";
 import {
   collection,
@@ -10,10 +11,13 @@ import {
   updateDoc,
   getDoc,
   setDoc,
-} from "firebase/firestore";
+} from "@firebase/firestore";
+import { getDatabase, ref, push, set } from "firebase/database";
 import { NotesCard } from "../NotesCard";
 import Button from "@mui/material/Button";
 import TextField from "@mui/material/TextField";
+import { userContext } from "@/authContext/AuthContext";
+import { useRouter } from "next/navigation";
 
 interface IData {
   title: FormDataEntryValue | null;
@@ -24,7 +28,25 @@ interface IData {
 
 export const AddNotes = () => {
   const [notes, setNotes] = useState([]);
-  const userCollectionRef = collection(db, "users");
+  const [updateInfo, setUpdateInfo] = useState({
+    title: "",
+    description: "",
+  });
+  const [edit, setEdit] = useState(null);
+  const { session } = useContext(userContext);
+  const router = useRouter();
+
+  // if (!session.userLogged) {
+  //   redirect("/");
+  // }
+
+  const handleChange = (event: any) => {
+    const { name, value } = event.target;
+    setUpdateInfo((prevInfo) => {
+      return { ...prevInfo, [name]: value };
+    });
+  };
+
   const handleAddNotes = (event: any) => {
     event.preventDefault();
     const formData = new FormData(event.target);
@@ -41,98 +63,88 @@ export const AddNotes = () => {
     event.target.reset();
   };
 
-  const addNote = async (data: IData) => {
-    try {
-      const docRef = await addDoc(userCollectionRef, data);
-      console.log("added");
-      console.log("Document written with ID: ", docRef.id);
-      getNotes();
-    } catch (e) {
-      console.error("Error adding document: ", e);
-    }
+  const addNote = async (data: any) => {
+    await addDoc(collection(db, session.userInfo.uid), data);
+    fetchNotes();
   };
 
   const deleteNote = async (id: string) => {
-    const noteRef = doc(db, "users", id);
+    const noteRef = doc(db, session.userInfo.uid, id);
     await deleteDoc(noteRef);
-    getNotes();
+    fetchNotes();
   };
 
   const updatePin = async (id: string) => {
-    const currentNoteRef = doc(db, "users", id);
+    const currentNoteRef = doc(db, session.userInfo.uid, id);
     const currentNote = await getDoc(currentNoteRef);
-    const noteRef = doc(db, "users", id);
+    const noteRef = doc(db, session.userInfo.uid, id);
     await updateDoc(noteRef, {
-      pin: !currentNote.data().pin,
+      pin: !currentNote.data()?.pin,
     });
-    getNotes();
+    fetchNotes();
   };
 
-  const getNotes = async () => {
-    const querySnapshot = await getDocs(userCollectionRef);
-    let sortedData = querySnapshot.docs
-      .map((doc) => ({
-        ...doc.data(),
-        id: doc.id,
-      }))
-      .sort((a, b) => a.position - b.position);
-    setNotes(sortedData);
+  const fetchNotes = async () => {
+    if (!session.userLogged || !session.userInfo.uid) {
+      return; // Exit early if the user is not logged in or uid is not available
+    }
+    const notesRef = collection(db, session.userInfo.uid);
+    const notesSnapshot = await getDocs(notesRef);
+    const notesData = notesSnapshot.docs.map((doc) => ({
+      id: doc.id,
+      ...doc.data(),
+    }));
+    setNotes(notesData);
   };
-
-  const setUser = async () => {
-    await setDoc(doc(db, "first", "second", "third", "four"), {
-      name: "Los Angeles",
-      state: "CA",
-      country: [1, 2, 3, 4, 5],
-    });
-  };
-
-  setUser();
 
   useEffect(() => {
-    getNotes();
-  }, []);
-
-  console.log(notes);
+    fetchNotes();
+  }, [session]);
 
   return (
-    <div className="w-[60%] mx-auto">
-      <h2 className="capitalize text-2xl font-bold text-center mt-5 mb-5">
-        add notes
-      </h2>
-      <form
-        onSubmit={handleAddNotes}
-        className="flex flex-col items-center gap-2"
-      >
-        <label htmlFor="title">Title</label>
-        <TextField
-          id="outlined-basic"
-          label="Outlined"
-          variant="outlined"
-          name="title"
-        />
-        <label htmlFor="Description">Description</label>
-        <TextField
-          id="outlined-basic"
-          label="Outlined"
-          variant="outlined"
-          name="description"
-        />
-        <Button type="submit" variant="contained">
-          Add
-        </Button>
-      </form>
+    <section className="py-10">
+      <div className="w-full max-w-3xl mx-auto p-6 bg-white rounded-lg drop-shadow-xl shadow-black">
+        <h2 className="text-3xl font-semibold text-center mb-8 uppercase">
+          Add Notes
+        </h2>
+        <form onSubmit={handleAddNotes} className=" flex flex-col gap-5">
+          <TextField
+            id="outlined-basic"
+            label="Title"
+            variant="outlined"
+            name="title"
+            onChange={handleChange}
+            className="flex-grow"
+          />
+          <TextField
+            id="outlined-basic"
+            label="Description"
+            variant="outlined"
+            name="description"
+            onChange={handleChange}
+            className="flex-grow"
+          />
+          <Button
+            type="submit"
+            variant="contained"
+            className="w-full md:w-auto mx-auto md:mx-0"
+          >
+            Add Note
+          </Button>
+        </form>
+      </div>
 
-      <div className="grid grid-cols-3 sm:grid-cols-2 gap-5 mt-10">
+      <div className="grid grid-cols-1 md:grid-cols-4 gap-5 mt-10 w-full max-w-6xl mx-auto">
         {notes.map((noteDetails, index) => (
           <NotesCard
             key={index}
             noteDetails={noteDetails}
+            index={index}
             deleteNote={deleteNote}
             updatePin={updatePin}
           />
         ))}
       </div>
-    </div>
+    </section>
   );
 };

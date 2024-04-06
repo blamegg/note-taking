@@ -26,7 +26,6 @@ export const Header = () => {
   const [vis, setVis] = useState(false);
   const handleLogout = async () => {
     await customLogout();
-    setVis(false);
     router.push("/");
     return null;
   };

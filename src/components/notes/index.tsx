@@ -159,7 +159,7 @@ export const AddNotes = () => {
 
   useEffect(() => {
     fetchNotes();
-  }, [session]);
+  }, [session, fetchNotes, notes]);
 
   const randomBgColor = () => {
     const colors = [

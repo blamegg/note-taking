@@ -94,7 +94,7 @@ export const ProfileInfo = () => {
       }));
     };
     uploadFile();
-  }, [session.userInfo?.uid]);
+  }, [session]);
 
   return (
     <>

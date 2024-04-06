@@ -28,6 +28,7 @@ export const Header = () => {
     await customLogout();
     setVis(false);
     router.push("/");
+    return null;
   };
 
   return (

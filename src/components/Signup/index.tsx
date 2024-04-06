@@ -9,8 +9,14 @@ export const Signup = () => {
     email: "",
     password: "",
   });
-  const { customCreateAccount, customGooglePopUp } = useContext(userContext);
+  const { customCreateAccount, customGooglePopUp, session } =
+    useContext(userContext);
   const router = useRouter();
+
+  if (session.userLogged) {
+    router.push("/");
+    return null;
+  }
 
   const handleChange = (event: ChangeEvent<HTMLInputElement>) => {
     const { name, value } = event.target;
@@ -23,6 +29,9 @@ export const Signup = () => {
   };
   const handleSubmit = (event: FormEvent<HTMLFormElement>) => {
     event.preventDefault();
+    if (userData.email === "" || userData.password === "") {
+      return null;
+    }
     customCreateAccount(userData);
     router.push("notes");
     setUserData({
@@ -36,7 +45,7 @@ export const Signup = () => {
   };
 
   return (
-    <div className="min-h-screen flex items-center justify-center bg-blue-400">
+    <div className="h-[100vh] flex items-center justify-center bg-blue-400">
       <div className="bg-white px-16 py-12 rounded shadow-2x1 w-[90%] lg:w-[40%]">
         <h2 className="text-3xl text-center font-bold mb-10 text-gray-800">
           Create Your Account
@@ -79,7 +88,7 @@ export const Signup = () => {
             </div>
           </div>
 
-          <div className="space-y-2">
+          <div className="space-y-4">
             <button
               type="submit"
               className="block w-full bg-yellow-400 hover:bg-yellow-300 p-4 rounded text-yellow-900 hover:text-yellow-800 transition duration-300"

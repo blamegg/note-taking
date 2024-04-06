@@ -5,6 +5,7 @@ import { LoginUser } from "./Login";
 import { Header } from "./Header";
 import { CustomLayout } from "./layout";
 import { HomeCard } from "./HomeCard";
+import { ProfileInfo } from "./Profile";
 export {
   AddNotes,
   NotesCard,
@@ -13,4 +14,5 @@ export {
   Header,
   CustomLayout,
   HomeCard,
+  ProfileInfo,
 };

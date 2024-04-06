@@ -5,7 +5,6 @@ import React, {
   ChangeEvent,
   FormEvent,
   useContext,
-  useEffect,
 } from "react";
 import { useRouter } from "next/navigation";
 import { userContext } from "@/authContext/AuthContext";
@@ -17,6 +16,12 @@ export const LoginUser = () => {
   });
   const { customLoginEmailPassword, session } = useContext(userContext);
   const router = useRouter();
+
+  if (session.userLogged) {
+    router.push("/");
+    return null;
+  }
+
   const handleChange = (event: ChangeEvent<HTMLInputElement>) => {
     const { name, value } = event.target;
     setUserData((prevData) => {
@@ -36,7 +41,7 @@ export const LoginUser = () => {
   };
 
   return (
-    <div className="min-h-screen flex items-center justify-center bg-blue-400">
+    <div className="flex items-center justify-center bg-blue-400 h-[100vh]">
       <div className="bg-white rounded-xl p-16 shadow-2x1 w-[90%] lg:w-[40%]">
         <h2 className="text-3xl text-center font-bold mb-10 text-gray-800">
           Login Your Account
@@ -72,12 +77,21 @@ export const LoginUser = () => {
             </label>
           </div>
 
-          <div>
+          <div className="space-y-4">
             <button
               type="submit"
               className="block w-full bg-yellow-400 hover:bg-yellow-300 p-4 rounded text-yellow-900 hover:text-yellow-800 transition duration-300"
             >
               Login
+            </button>
+            <button
+              type="button"
+              className="block w-full bg-yellow-400 hover:bg-yellow-300 p-4 rounded text-yellow-900 hover:text-yellow-800 transition duration-300"
+              onClick={() => {
+                router.push("/signup");
+              }}
+            >
+              Create new account
             </button>
           </div>
         </form>

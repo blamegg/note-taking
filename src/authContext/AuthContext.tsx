@@ -8,8 +8,6 @@ import {
   signInWithEmailAndPassword,
   signInWithPopup,
   signOut,
-  browserLocalPersistence,
-  setPersistence,
 } from "firebase/auth";
 import { auth } from "@/firebase/config";
 
@@ -43,7 +41,7 @@ const AuthContext = ({ children }: { children: React.ReactNode }) => {
       }
     });
     return () => unsubscribe();
-  }, []);
+  }, [auth]);
 
   const customLoginEmailPassword = async (email: string, password: string) => {
     const user = await signInWithEmailAndPassword(auth, email, password);

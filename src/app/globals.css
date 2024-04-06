@@ -2,8 +2,17 @@
 @tailwind components;
 @tailwind utilities;
 
-@layer components {
-  .input-form {
-    @apply p-2 border border-black;
-  }
+/* width */
+::-webkit-scrollbar {
+  width: 5px;
+}
+
+/* Track */
+::-webkit-scrollbar-track {
+  background: #f1f1f1;
+}
+
+/* Handle */
+::-webkit-scrollbar-thumb {
+  background: #6366f1;
 }

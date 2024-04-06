@@ -1,17 +1,21 @@
 import { HomePageCard } from "@/constant";
+import Image from "next/image";
 
 export const HomeCard = () => {
   return (
     <>
       {HomePageCard.map((home, index) => {
         return (
-          <div className="grid grid-cols-2 gap-5">
+          <div key={index} className="grid grid-cols-2 gap-5">
             <div className="grid place-items-center">
               <div className="w-full h-60 px-10">
-                <img
+                <Image
                   src={home.img?.src}
                   alt=""
                   className="h-full w-full object-cover rounded-xl"
+                  loading="lazy"
+                  width={100}
+                  height={100}
                 />
               </div>
             </div>

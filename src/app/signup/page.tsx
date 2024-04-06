@@ -1,5 +1,6 @@
 "use client";
-import { Signup } from "@/components";
+
+import {  Signup } from "@/components";
 
 const page = () => {
   return <Signup />;

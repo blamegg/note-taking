@@ -6,6 +6,8 @@ import { Header } from "./Header";
 import { CustomLayout } from "./layout";
 import { HomeCard } from "./HomeCard";
 import { ProfileInfo } from "./Profile";
+import { Notification } from "./Notification";
+
 export {
   AddNotes,
   NotesCard,
@@ -15,4 +17,5 @@ export {
   CustomLayout,
   HomeCard,
   ProfileInfo,
+  Notification,
 };

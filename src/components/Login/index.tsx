@@ -1,11 +1,6 @@
 "use client";
 
-import React, {
-  useState,
-  ChangeEvent,
-  FormEvent,
-  useContext,
-} from "react";
+import React, { useState, ChangeEvent, FormEvent, useContext } from "react";
 import { useRouter } from "next/navigation";
 import { userContext } from "@/authContext/AuthContext";
 
@@ -31,6 +26,7 @@ export const LoginUser = () => {
       };
     });
   };
+
   const handleSubmit = (event: FormEvent<HTMLFormElement>) => {
     event.preventDefault();
     if (userData.email === "" || userData.password === "") {
@@ -38,11 +34,14 @@ export const LoginUser = () => {
     }
     customLoginEmailPassword(userData.email, userData.password);
     router.push("notes");
+    return null;
   };
+
+  console.log(session);
 
   return (
     <div className="flex items-center justify-center bg-blue-400 h-[100vh]">
-      <div className="bg-white rounded-xl p-16 shadow-2x1 w-[90%] lg:w-[40%]">
+      <div className="bg-white rounded-xl p-16 shadow-2x1 w-[90%] lg:w-[35%]">
         <h2 className="text-3xl text-center font-bold mb-10 text-gray-800">
           Login Your Account
         </h2>
@@ -69,6 +68,10 @@ export const LoginUser = () => {
               onChange={handleChange}
             />
           </div>
+
+          {Object.keys(session.userInfo).length > 0 && (
+            <h5 className="text-red-600 font-bold">invalid credentials</h5>
+          )}
 
           <div className="flex items-center">
             <input type="checkbox" id="agree" />

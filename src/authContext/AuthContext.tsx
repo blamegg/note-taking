@@ -1,5 +1,6 @@
 "use client";
 import React, { createContext, useState, useEffect } from "react";
+import { GithubAuthProvider } from "firebase/auth";
 import {
   getAuth,
   createUserWithEmailAndPassword,
@@ -8,11 +9,13 @@ import {
   signInWithEmailAndPassword,
   signInWithPopup,
   signOut,
+  updateProfile,
 } from "firebase/auth";
 import { auth } from "@/firebase/config";
 
 export const userContext = createContext<any>(null);
 const provider = new GoogleAuthProvider();
+const providerGithub = new GithubAuthProvider();
 const oAuth = getAuth();
 
 const initialState = {
@@ -24,6 +27,7 @@ const initialState = {
 const AuthContext = ({ children }: { children: React.ReactNode }) => {
   const [session, setSession] = useState(initialState);
 
+  // eslint-disable-next-line react-hooks/exhaustive-deps
   useEffect(() => {
     const unsubscribe = onAuthStateChanged(auth, (user) => {
       if (user) {
@@ -41,15 +45,23 @@ const AuthContext = ({ children }: { children: React.ReactNode }) => {
       }
     });
     return () => unsubscribe();
-  }, [auth]);
+  }, []);
 
   const customLoginEmailPassword = async (email: string, password: string) => {
-    const user = await signInWithEmailAndPassword(auth, email, password);
-    setSession({
-      userLogged: true,
-      status: "",
-      userInfo: user.user,
-    });
+    try {
+      const user = await signInWithEmailAndPassword(auth, email, password);
+      setSession({
+        userLogged: true,
+        status: "",
+        userInfo: user.user,
+      });
+    } catch (error) {
+      setSession({
+        userLogged: false,
+        status: "",
+        userInfo: {},
+      });
+    }
   };
 
   const customGooglePopUp = async () => {
@@ -61,19 +73,39 @@ const AuthContext = ({ children }: { children: React.ReactNode }) => {
     });
   };
 
+  const customGitHubPopUp = async () => {
+    try {
+      const result = await signInWithPopup(oAuth, providerGithub);
+
+      setSession({
+        userLogged: true,
+        status: "",
+        userInfo: result.user,
+      });
+    } catch (error) {
+      console.error("GitHub sign-in error:", error);
+    }
+  };
+
   const customCreateAccount = async (userData: {
     email: string;
     password: string;
+    displayName: string;
   }) => {
-    const user = await createUserWithEmailAndPassword(
+    const userCredential = await createUserWithEmailAndPassword(
       oAuth,
       userData.email,
       userData.password
     );
+
+    await updateProfile(userCredential.user, {
+      displayName: userData.displayName,
+    });
+
     setSession({
       userLogged: true,
       status: "",
-      userInfo: user.user,
+      userInfo: userCredential.user,
     });
   };
 
@@ -94,6 +126,7 @@ const AuthContext = ({ children }: { children: React.ReactNode }) => {
         customGooglePopUp,
         customCreateAccount,
         customLogout,
+        customGitHubPopUp,
       }}
     >
       {children}

@@ -30,20 +30,33 @@ export const ProfileInfo = () => {
     displayName: "",
     url: "",
   });
-  const [open, setOpen] = useState(false);
   const [file, setFile] = useState(null);
-  const handleOpen = () => setOpen(true);
-  const handleClose = () => setOpen(false);
-  const storage = getStorage();
+  const [open, setOpen] = useState(false);
   const fileInputRef = useRef<HTMLInputElement>(null);
   const { session } = useContext(userContext);
+
+  useEffect(() => {
+    const uploadFile = async () => {
+      const storageRef = ref(storage, `${session.userInfo?.uid}/newFile`);
+      const downloadURL = await getDownloadURL(storageRef);
+      setProfile((prev) => ({
+        ...prev,
+        url: downloadURL,
+      }));
+    };
+    uploadFile();
+  }, [session]);
+
+  const storage = getStorage();
   const router = useRouter();
   const auth = getAuth();
+  const handleOpen = () => setOpen(true);
+  const handleClose = () => setOpen(false);
 
-  if (!session.userLogged) {
-    router.push("/");
-    return null;
-  }
+  // if (!session.userLogged) {
+  //   router.push("/");
+  //   return null;
+  // }
 
   const handleFileChange = (e: ChangeEvent<HTMLInputElement | any>) => {
     const selectedFile = e.target?.files[0];
@@ -70,11 +83,6 @@ export const ProfileInfo = () => {
     handleClose();
   };
 
-  // const updateEmail = async () => {
-  //   if (auth.currentUser === null) return null;
-  //   await updateEmail();
-  // };
-
   const handleChange = (event: ChangeEvent<HTMLInputElement>) => {
     const { name, value } = event.target;
     setProfile((prev) => {
@@ -82,19 +90,7 @@ export const ProfileInfo = () => {
     });
   };
 
-  useEffect(() => {
-    const uploadFile = async () => {
-      const storageRef = ref(storage, `${session.userInfo?.uid}/newFile`);
-      const downloadURL = await getDownloadURL(storageRef);
-      setProfile((prev) => ({
-        ...prev,
-        url:
-          downloadURL ??
-          "https://as2.ftcdn.net/v2/jpg/04/70/29/97/1000_F_470299797_UD0eoVMMSUbHCcNJCdv2t8B2g1GVqYgs.jpg",
-      }));
-    };
-    uploadFile();
-  }, [session]);
+  console.log(session);
 
   return (
     <>
@@ -110,9 +106,7 @@ export const ProfileInfo = () => {
           <img
             className="object-cover object-center h-32"
             src={
-              session.userInfo.photoURL ??
-              profile.url ??
-              "https://as2.ftcdn.net/v2/jpg/04/70/29/97/1000_F_470299797_UD0eoVMMSUbHCcNJCdv2t8B2g1GVqYgs.jpg"
+              profile.url || session.userInfo.photoURL || "fallback-image-url"
             }
             alt="Woman looking front"
           />
@@ -121,9 +115,7 @@ export const ProfileInfo = () => {
           {session.userInfo?.displayName && (
             <h2 className="font-semibold">{session.userInfo?.displayName}</h2>
           )}
-          <p className="text-gray-500">
-            {session.userInfo?.email ?? "no email"}
-          </p>
+          <p className="text-gray-500">{session.userInfo?.email}</p>
           <p className="text-gray-500">
             {session.userInfo?.metadata?.creationTime}
           </p>
@@ -154,30 +146,37 @@ export const ProfileInfo = () => {
         <Box sx={style}>
           <div className="">
             <div className="bg-white rounded-xl">
-              <form onSubmit={handleProfileChange}>
-                <div className="flex items-center mb-5">
+              <form
+                className="flex flex-col gap-4"
+                onSubmit={handleProfileChange}
+              >
+                <div>
                   <label
                     htmlFor="name"
-                    className="inline-block text-right mr-4 text-gray-500"
+                    className=" text-right text-gray-500 uppercase"
                   >
                     display Name
                   </label>
+                </div>
+                <div>
                   <input
                     name="displayName"
                     id="name"
                     type="text"
                     placeholder="display name"
                     onChange={handleChange}
-                    className="border-b-2 border-gray-400 flex-1 py-2 placeholder-gray-300 outline-none focus:border-green-400"
+                    className="w-full border-b-2 border-gray-400  placeholder-gray-300 outline-none focus:border-green-400"
                   />
                 </div>
-                <div className="flex items-center mb-10">
+                <div>
                   <label
                     htmlFor="twitter"
-                    className=" inline-block text-right mr-4 text-gray-500"
+                    className="w-full text-right mr-4 text-gray-500 uppercase"
                   >
                     Image
                   </label>
+                </div>
+                <div>
                   <input
                     type="file"
                     name="url"
@@ -185,10 +184,11 @@ export const ProfileInfo = () => {
                     placeholder="image url"
                     onChange={handleFileChange}
                     ref={fileInputRef}
-                    className="flex-1 py-2 placeholder-gray-300 outline-none"
+                    className="w-full placeholder-gray-300 outline-none"
                   />
                 </div>
-                <div className="flex justify-between items-center ">
+
+                <div className="flex justify-between items-center mt-4">
                   <button
                     type="submit"
                     className="py-2 px-3 bg-gray-900 text-white font-bold rounded-xl"

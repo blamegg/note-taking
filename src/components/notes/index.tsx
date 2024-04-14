@@ -11,16 +11,11 @@ import {
   getDoc,
   setDoc,
 } from "@firebase/firestore";
-import { getDatabase, ref, push, set } from "firebase/database";
 import { NotesCard } from "../NotesCard";
-import Button from "@mui/material/Button";
-import TextField from "@mui/material/TextField";
 import { userContext } from "@/authContext/AuthContext";
 import { useRouter } from "next/navigation";
 import Box from "@mui/material/Box";
-import Typography from "@mui/material/Typography";
 import Modal from "@mui/material/Modal";
-import { RiCloseFill } from "react-icons/ri";
 
 interface IData {
   title: FormDataEntryValue | null;
@@ -52,6 +47,7 @@ const style = {
 
 export const AddNotes = () => {
   const [notes, setNotes] = useState<INote[]>([]);
+  const [open, setOpen] = useState(false);
   const [updateInfo, setUpdateInfo] = useState({
     title: "",
     description: "",
@@ -64,7 +60,29 @@ export const AddNotes = () => {
   const { session } = useContext(userContext);
   const router = useRouter();
 
-  const [open, setOpen] = useState(false);
+  useEffect(() => {
+    const fetchNotes = async () => {
+      if (!session.userLogged || !session.userInfo.uid) {
+        return null;
+      }
+      const notesRef = collection(db, session.userInfo.uid);
+      const notesSnapshot = await getDocs(notesRef);
+      const notesData: INote[] = notesSnapshot.docs.map((doc) => ({
+        id: doc.id,
+        title: doc.data().title,
+        description: doc.data().description,
+        position: doc.data().position,
+        pin: doc.data().pin,
+        bgColor: doc.data().bgColor,
+      }));
+      const orderNotes = notesData.sort(
+        (note1, note2) => note1.position - note2.position
+      );
+      setNotes(orderNotes);
+    };
+    fetchNotes();
+  }, [session]);
+
   const handleOpen = () => setOpen(true);
   const handleClose = () => setOpen(false);
 
@@ -88,6 +106,9 @@ export const AddNotes = () => {
     if (data["title"] === "" || data["description"] === "") {
       return null;
     }
+    pushNotificationDB(
+      `Note with title: ${formData.get("title")} is added to notes`
+    );
     addNote(data);
     event.target.reset();
     handleClose();
@@ -101,6 +122,10 @@ export const AddNotes = () => {
   const deleteNote = async (id: string) => {
     const noteRef = doc(db, session.userInfo.uid, id);
     await deleteDoc(noteRef);
+    const deleteNoteName = notes.find((e) => e.id === id);
+    pushNotificationDB(
+      `Note with title: ${deleteNoteName?.title} is deleted from notes app`
+    );
     fetchNotes();
   };
 
@@ -111,12 +136,16 @@ export const AddNotes = () => {
     await updateDoc(noteRef, {
       pin: !currentNote.data()?.pin,
     });
+    const updateNoteName = notes.find((e) => e.id === id);
+    pushNotificationDB(
+      `Note with title ${updateNoteName?.title} is pinned in notes app`
+    );
     fetchNotes();
   };
 
   const fetchNotes = async () => {
     if (!session.userLogged || !session.userInfo.uid) {
-      return;
+      return null;
     }
     const notesRef = collection(db, session.userInfo.uid);
     const notesSnapshot = await getDocs(notesRef);
@@ -147,6 +176,10 @@ export const AddNotes = () => {
       ...editedInfo,
     });
     setEdit(null);
+    const editNoteName = notes.find((e) => e.id === noteId);
+    pushNotificationDB(
+      `Note with title: ${editNoteName?.title} is updated in notes app`
+    );
     fetchNotes();
   };
 
@@ -156,10 +189,6 @@ export const AddNotes = () => {
       return { ...prevInfo, [name]: value };
     });
   };
-
-  useEffect(() => {
-    fetchNotes();
-  }, [session, fetchNotes, notes]);
 
   const randomBgColor = () => {
     const colors = [
@@ -173,7 +202,6 @@ export const AddNotes = () => {
       "bg-red-300",
       "bg-teal-300",
       "bg-cyan-300",
-      "bg-gray-300",
       "bg-rose-300",
       "bg-emerald-300",
       "bg-lightBlue-300",
@@ -183,6 +211,12 @@ export const AddNotes = () => {
     ];
     const randomIndex = Math.floor(Math.random() * colors.length);
     return colors[randomIndex];
+  };
+
+  const pushNotificationDB = async (title: string) => {
+    await setDoc(doc(db, `notify_${session.userInfo.uid}`, `${Date.now()}`), {
+      notificationTitle: title,
+    });
   };
 
   return (
@@ -210,36 +244,40 @@ export const AddNotes = () => {
           <div className="">
             <div className="bg-white rounded-xl">
               <form onSubmit={handleAddNotes}>
-                <div className="flex items-center mb-5">
-                  <label
-                    htmlFor="name"
-                    className="w-20 inline-block text-right mr-4 text-gray-500"
-                  >
-                    Note Title
-                  </label>
+                <div className="mb-5">
+                  <div>
+                    <label
+                      htmlFor="name"
+                      className="w-full inline-block mr-4 text-gray-500"
+                    >
+                      Note Title
+                    </label>
+                  </div>
                   <input
                     name="title"
                     id="name"
                     type="text"
                     placeholder="note title..."
                     onChange={handleChange}
-                    className="border-b-2 border-gray-400 flex-1 py-2 placeholder-gray-300 outline-none focus:border-green-400"
+                    className="w-full border-b-2 border-gray-400 py-2 placeholder-gray-300 outline-none focus:border-green-400"
                   />
                 </div>
-                <div className="flex items-center mb-10">
-                  <label
-                    htmlFor="twitter"
-                    className="w-20 inline-block text-right mr-4 text-gray-500"
-                  >
-                    Content
-                  </label>
+                <div className="mb-10">
+                  <div>
+                    <label
+                      htmlFor="twitter"
+                      className="w-full inline-block mr-4 text-gray-500"
+                    >
+                      Content
+                    </label>
+                  </div>
                   <input
                     type="text"
                     name="description"
                     id="twitter"
                     placeholder="write something for your note..."
                     onChange={handleChange}
-                    className="border-b-2 border-gray-400 flex-1 py-2 placeholder-gray-300 outline-none focus:border-green-400"
+                    className="w-full border-b-2 border-gray-400 py-2 placeholder-gray-300 outline-none focus:border-green-400"
                   />
                 </div>
                 <div className="text-right">
@@ -256,7 +294,7 @@ export const AddNotes = () => {
         </Box>
       </Modal>
 
-      <div className="grid grid-cols-1 sm:grid-cols-3 md:grid-cols-4 gap-5 mt-10 mx-auto w-5/6">
+      <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 xl:grid-cols-4 gap-5 mt-10 mx-auto w-5/6">
         {notes.map((noteDetails, index) => (
           <NotesCard
             key={index}

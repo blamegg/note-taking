@@ -4,6 +4,8 @@ import { useContext, useState } from "react";
 import { userContext } from "@/authContext/AuthContext";
 import Avatar from "@mui/material/Avatar";
 import { RiCloseFill } from "react-icons/ri";
+import { Notification } from "../Notification";
+import "react-modern-drawer/dist/index.css";
 
 const customRoutes = [
   {
@@ -17,13 +19,13 @@ const customRoutes = [
 ];
 
 export const Header = () => {
+  const [isOpen, setIsOpen] = useState(false);
   const [open, setOpen] = useState(false);
-  const handleOpen = () => setOpen(true);
-  const handleClose = () => setOpen(false);
+  const [vis, setVis] = useState(false);
+  const { customLogout, session } = useContext(userContext);
   const router = useRouter();
   const pathName = usePathname();
-  const { customLogout, session } = useContext(userContext);
-  const [vis, setVis] = useState(false);
+
   const handleLogout = async () => {
     await customLogout();
     router.push("/");
@@ -34,7 +36,7 @@ export const Header = () => {
     <>
       <nav className="bg-gray-200 shadow shadow-gray-300 w-100 px-8 md:px-auto">
         <div className="md:h-16 h-28 mx-auto md:px-4 container flex items-center justify-between flex-wrap md:flex-nowrap">
-          <div className="text-indigo-500 md:order-1">
+          <div className="text-indigo-500">
             <svg
               xmlns="http://www.w3.org/2000/svg"
               className="h-10 w-10"
@@ -43,15 +45,16 @@ export const Header = () => {
               stroke="currentColor"
             >
               <path
-                stroke-linecap="round"
-                stroke-linejoin="round"
-                stroke-width="2"
+                strokeLinecap="round"
+                strokeLinejoin="round"
+                strokeWidth="2"
                 d="M9 3v2m6-2v2M9 19v2m6-2v2M5 9H3m2 6H3m18-6h-2m2 6h-2M7 19h10a2 2 0 002-2V7a2 2 0 00-2-2H7a2 2 0 00-2 2v10a2 2 0 002 2zM9 9h6v6H9V9z"
               />
             </svg>
           </div>
-          <div className=" order-3 w-full md:w-auto md:order-2">
-            <ul className="flex font-semibold justify-between">
+
+          <div>
+            <ul className="flex flex-wrap gap-4 md:gap-0 font-semibold">
               {customRoutes.map((route, index) => (
                 <li
                   className={`md:px-4 md:py-2 hover:text-indigo-400 cursor-pointer ${
@@ -67,7 +70,9 @@ export const Header = () => {
               ))}
             </ul>
           </div>
-          <div className="order-2 md:order-3">
+
+          <div className="flex items-center gap-3">
+            <Notification />
             <Avatar
               className="hover:cursor-pointer relative border-2 border-indigo-500"
               src={session.userInfo.photoURL ?? ""}
@@ -76,9 +81,9 @@ export const Header = () => {
               {session.userInfo.displayName?.slice(0, 1) ?? "G"}
             </Avatar>
             {vis && (
-              <div className="absolute right-4 top-[8%] z-10 bg-[#BED7DC] py-8 px-6 rounded-2xl w-[24%]">
+              <div className="absolute right-4 top-[10%] md:top-[8%] z-10 bg-[#BED7DC] py-8 px-6 rounded-2xl lg:w-[24%]">
                 <div
-                  className="rounded-full bg-black p-1 cursor-pointer absolute top-[30px] right-5"
+                  className="rounded-full bg-black p-1 cursor-pointer absolute top-[30px] right-2 xl:right-5"
                   onClick={() => setVis(false)}
                 >
                   <RiCloseFill className="h-4 w-4 text-white" />
@@ -97,7 +102,7 @@ export const Header = () => {
                   </Avatar>
 
                   <h5>Hi , {session.userInfo.displayName ?? "Guest"}</h5>
-                  <div className=" flex justify-center gap-5">
+                  <div className=" flex justify-center flex-wrap gap-5">
                     <div
                       className="relative inline-flex group"
                       onClick={() => {
@@ -116,7 +121,10 @@ export const Header = () => {
                     </div>
                     <div
                       className="relative inline-flex group"
-                      onClick={() => handleLogout()}
+                      onClick={() => {
+                        handleLogout();
+                        sessionStorage.clear();
+                      }}
                     >
                       <div className="absolute transition-all duration-1000 opacity-70 -inset-px bg-gradient-to-r from-[#44BCFF] via-[#FF44EC] to-[#FF675E] rounded-xl blur-lg group-hover:opacity-100 group-hover:-inset-1 group-hover:duration-200 animate-tilt outline-none"></div>
                       <a

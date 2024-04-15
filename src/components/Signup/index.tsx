@@ -55,7 +55,7 @@ export const Signup = () => {
   };
 
   const handleSubmit = (event: FormEvent<HTMLFormElement>) => {
-    console.log("work");
+   
     event.preventDefault();
     if (
       userData.displayName === "" ||

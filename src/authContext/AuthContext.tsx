@@ -27,7 +27,6 @@ const initialState = {
 const AuthContext = ({ children }: { children: React.ReactNode }) => {
   const [session, setSession] = useState(initialState);
 
-  // eslint-disable-next-line react-hooks/exhaustive-deps
   useEffect(() => {
     const unsubscribe = onAuthStateChanged(auth, (user) => {
       if (user) {
@@ -55,35 +54,49 @@ const AuthContext = ({ children }: { children: React.ReactNode }) => {
         status: "",
         userInfo: user.user,
       });
-    } catch (error) {
+    } catch (error: any) {
+      console.error("Login error:", error.message);
+      // setSession({
+      //   userLogged: false,
+      //   status: "error",
+      //   userInfo: {},
+      // });
+    }
+  };
+
+  const customGooglePopUp = async () => {
+    try {
+      const user = await signInWithPopup(oAuth, provider);
+      setSession({
+        userLogged: true,
+        status: "",
+        userInfo: user.user,
+      });
+    } catch (error: any) {
+      console.error("Google sign-in error:", error.message);
       setSession({
         userLogged: false,
-        status: "",
+        status: "error",
         userInfo: {},
       });
     }
   };
 
-  const customGooglePopUp = async () => {
-    const user = await signInWithPopup(oAuth, provider);
-    setSession({
-      userLogged: true,
-      status: "",
-      userInfo: user.user,
-    });
-  };
-
   const customGitHubPopUp = async () => {
     try {
       const result = await signInWithPopup(oAuth, providerGithub);
-
       setSession({
         userLogged: true,
         status: "",
         userInfo: result.user,
       });
-    } catch (error) {
-      console.error("GitHub sign-in error:", error);
+    } catch (error: any) {
+      console.error("GitHub sign-in error:", error.message);
+      setSession({
+        userLogged: false,
+        status: "error",
+        userInfo: {},
+      });
     }
   };
 
@@ -92,30 +105,43 @@ const AuthContext = ({ children }: { children: React.ReactNode }) => {
     password: string;
     displayName: string;
   }) => {
-    const userCredential = await createUserWithEmailAndPassword(
-      oAuth,
-      userData.email,
-      userData.password
-    );
+    try {
+      const userCredential = await createUserWithEmailAndPassword(
+        oAuth,
+        userData.email,
+        userData.password
+      );
 
-    await updateProfile(userCredential.user, {
-      displayName: userData.displayName,
-    });
+      await updateProfile(userCredential.user, {
+        displayName: userData.displayName,
+      });
 
-    setSession({
-      userLogged: true,
-      status: "",
-      userInfo: userCredential.user,
-    });
+      setSession({
+        userLogged: true,
+        status: "",
+        userInfo: userCredential.user,
+      });
+    } catch (error: any) {
+      console.error("Signup error:", error.message);
+      setSession({
+        userLogged: false,
+        status: "error",
+        userInfo: {},
+      });
+    }
   };
 
   const customLogout = async () => {
-    await signOut(oAuth);
-    setSession({
-      userLogged: false,
-      status: "",
-      userInfo: {},
-    });
+    try {
+      await signOut(oAuth);
+      setSession({
+        userLogged: false,
+        status: "",
+        userInfo: {},
+      });
+    } catch (error: any) {
+      console.error("Logout error:", error.message);
+    }
   };
 
   return (

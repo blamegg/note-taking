@@ -38,11 +38,13 @@ export const ProfileInfo = () => {
   useEffect(() => {
     const uploadFile = async () => {
       const storageRef = ref(storage, `${session.userInfo?.uid}/newFile`);
-      const downloadURL = await getDownloadURL(storageRef);
-      setProfile((prev) => ({
-        ...prev,
-        url: downloadURL,
-      }));
+      if (storageRef) {
+        const downloadURL = await getDownloadURL(storageRef);
+        setProfile((prev) => ({
+          ...prev,
+          url: downloadURL,
+        }));
+      }
     };
     uploadFile();
   }, [session]);
@@ -53,10 +55,10 @@ export const ProfileInfo = () => {
   const handleOpen = () => setOpen(true);
   const handleClose = () => setOpen(false);
 
-  // if (!session.userLogged) {
-  //   router.push("/");
-  //   return null;
-  // }
+  if (!session.userLogged) {
+    router.push("/");
+    return null;
+  }
 
   const handleFileChange = (e: ChangeEvent<HTMLInputElement | any>) => {
     const selectedFile = e.target?.files[0];
@@ -90,8 +92,6 @@ export const ProfileInfo = () => {
     });
   };
 
-  console.log(session);
-
   return (
     <>
       <div className="max-w-2xl mx-4 sm:max-w-sm md:max-w-sm lg:max-w-sm xl:max-w-sm sm:mx-auto md:mx-auto lg:mx-auto xl:mx-auto mt-16 bg-white shadow-xl rounded-lg text-gray-900 border-2 border-indigo-500">
@@ -106,7 +106,9 @@ export const ProfileInfo = () => {
           <img
             className="object-cover object-center h-32"
             src={
-              profile.url || session.userInfo.photoURL || "fallback-image-url"
+              profile.url ||
+              session.userInfo.photoURL ||
+              "https://images.unsplash.com/photo-1549880338-65ddcdfd017b?ixlib=rb-1.2.1&q=80&fm=jpg&crop=entropy&cs=tinysrgb&w=400&fit=max&ixid=eyJhcHBfaWQiOjE0NTg5fQ"
             }
             alt="Woman looking front"
           />

@@ -7,6 +7,7 @@ import { CustomLayout } from "./layout";
 import { HomeCard } from "./HomeCard";
 import { ProfileInfo } from "./Profile";
 import { Notification } from "./Notification";
+import { ForgetPassword } from "./ForgetPassword";
 
 export {
   AddNotes,
@@ -18,4 +19,5 @@ export {
   HomeCard,
   ProfileInfo,
   Notification,
+  ForgetPassword,
 };

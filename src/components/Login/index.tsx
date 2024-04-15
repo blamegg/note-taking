@@ -3,6 +3,12 @@
 import React, { useState, ChangeEvent, FormEvent, useContext } from "react";
 import { useRouter } from "next/navigation";
 import { userContext } from "@/authContext/AuthContext";
+import {
+  getAuth,
+  sendEmailVerification,
+  sendPasswordResetEmail,
+} from "firebase/auth";
+import { ForgetPassword } from "@/components";
 
 export const LoginUser = () => {
   const [userData, setUserData] = useState({
@@ -27,17 +33,20 @@ export const LoginUser = () => {
     });
   };
 
-  const handleSubmit = (event: FormEvent<HTMLFormElement>) => {
+  const handleSubmit = async (event: FormEvent<HTMLFormElement>) => {
     event.preventDefault();
-    if (userData.email === "" || userData.password === "") {
-      return null;
-    }
-    customLoginEmailPassword(userData.email, userData.password);
-    router.push("notes");
-    return null;
-  };
 
-  console.log(session);
+    if (userData.email === "" || userData.password === "") {
+      return;
+    }
+    try {
+      await customLoginEmailPassword(userData.email, userData.password);
+
+      router.push("notes");
+    } catch (error: any) {
+      console.error("Login error:", error.message);
+    }
+  };
 
   return (
     <div className="flex items-center justify-center bg-blue-400 h-[100vh]">
@@ -72,14 +81,18 @@ export const LoginUser = () => {
           {Object.keys(session.userInfo).length > 0 && (
             <h5 className="text-red-600 font-bold">invalid credentials</h5>
           )}
-
-          <div className="flex items-center">
-            <input type="checkbox" id="agree" />
-            <label htmlFor="agree" className="ml-2 text-gray-700 text-sm">
-              Remember me
-            </label>
+          <div className="flex justify-between">
+            <div className="flex items-center">
+              <input type="checkbox" id="agree" />
+              <label
+                htmlFor="agree"
+                className="ml-1 text-gray-700 text-sm cursor-pointer"
+              >
+                Remember me
+              </label>
+            </div>
+            <ForgetPassword />
           </div>
-
           <div className="space-y-4">
             <button
               type="submit"

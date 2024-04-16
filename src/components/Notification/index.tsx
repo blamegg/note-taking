@@ -7,45 +7,57 @@ import { userContext } from "@/authContext/AuthContext";
 import { collection, getDocs } from "firebase/firestore";
 import { db } from "@/firebase/config";
 import { query, limit } from "firebase/firestore";
-import { FaBullseye } from "react-icons/fa6";
 
 export const Notification = () => {
   const [notification, setNotification] = useState<[] | string[]>([]);
   const [isOpen, setIsOpen] = useState<boolean>(false);
   const [showAll, setShowAll] = useState<boolean>(false);
   const { session } = useContext(userContext);
+  const [currentLimit, setCurrentLimit] = useState(5);
+
+  useEffect(() => {
+    getNotificationDB(5);
+  }, [isOpen]);
 
   const toggleDrawer = () => {
-    setIsOpen((prevState) => !prevState);
+    setIsOpen((prevState) => {
+      if (prevState) {
+        setCurrentLimit(5);
+      }
+      return !prevState;
+    });
   };
 
-  const getNotificationDB = async (max: number | null) => {
+  const getNotificationDB = async (currentLimits: number) => {
     const refNote = collection(db, `notify_${session.userInfo.uid}`);
     let notifications: string[] = [];
     try {
-      const q = query(refNote, limit(max ?? 5));
+      const q = query(refNote, limit(currentLimits));
       const querySnapshot = await getDocs(q);
       querySnapshot.forEach((doc) => {
         notifications.push(doc.data().notificationTitle);
       });
-      setNotification(notifications);
+      setNotification(notifications.reverse());
     } catch (error) {
       console.error("Error getting documents: ", error);
     }
   };
 
-  useEffect(() => {
-    getNotificationDB(null);
-  }, [isOpen]);
-
   const handleMore = () => {
-    getNotificationDB(100);
+    const newLimit = currentLimit + 5;
+    setCurrentLimit(newLimit);
+    getNotificationDB(newLimit);
     setShowAll(true);
   };
 
-  const handleLess = () => {
-    getNotificationDB(5);
-    setShowAll(false);
+  const totalNotification = async () => {
+    const refNote = collection(db, `notify_${session.userInfo.uid}`);
+    let notifications: string[] = [];
+    const querySnapshot = await getDocs(refNote);
+    querySnapshot.forEach((doc) => {
+      notifications.push(doc.data().notificationTitle);
+    });
+    return notifications.length;
   };
 
   return (
@@ -63,9 +75,7 @@ export const Notification = () => {
         onClose={toggleDrawer}
         lockBackgroundScroll
         direction="right"
-        className={`!w-[280px] sm:!w-[400px] ${
-          showAll ? "!h-full" : "!h-[40%]"
-        }`}
+        className={`!w-[280px] sm:!w-[400px] !h-[50%] overflow-auto`}
       >
         <div className="px-6 py-5">
           <div>
@@ -90,21 +100,12 @@ export const Notification = () => {
                   </p>
                 );
               })}
-              {showAll ? (
-                <button
-                  onClick={handleLess}
-                  className="text-blue-500 hover:underline focus:outline-none"
-                >
-                  Show Less
-                </button>
-              ) : (
-                <button
-                  onClick={handleMore}
-                  className="text-blue-500 hover:underline focus:outline-none"
-                >
-                  Show More
-                </button>
-              )}
+              <button
+                onClick={handleMore}
+                className="text-blue-500 hover:underline focus:outline-none capitalize"
+              >
+                Show More
+              </button>
             </div>
           </div>
         </div>

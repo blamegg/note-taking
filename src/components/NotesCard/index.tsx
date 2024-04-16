@@ -11,11 +11,15 @@ interface INotesCard {
   noteDetails: INote;
   deleteNote: (id: string) => Promise<void>;
   updatePin: (id: string) => Promise<void>;
-  onEdit: (index: number) => null | undefined;
+  onEdit: (index: number, id: string) => null | undefined;
   edit: number | null;
   index: number;
   handleEditChange: (event: ChangeEvent<HTMLInputElement>) => void;
   onSaveButton: (noteId: string) => Promise<void>;
+  editedInfo: {
+    title: "";
+    description: "";
+  };
 }
 
 export const NotesCard = ({
@@ -27,6 +31,7 @@ export const NotesCard = ({
   handleEditChange,
   edit,
   onSaveButton,
+  editedInfo,
 }: INotesCard) => {
   return (
     <div
@@ -41,6 +46,7 @@ export const NotesCard = ({
               variant="outlined"
               name="title"
               onChange={handleEditChange}
+              value={editedInfo.title}
               size="small"
             />
           </div>
@@ -65,6 +71,7 @@ export const NotesCard = ({
             variant="outlined"
             name="description"
             onChange={handleEditChange}
+            value={editedInfo.description}
             size="small"
           />
         ) : (
@@ -94,7 +101,7 @@ export const NotesCard = ({
             ) : (
               <MdOutlineModeEdit
                 className="h-5 w-5 text-white"
-                onClick={() => onEdit(index)}
+                onClick={() => onEdit(index, noteDetails.id)}
               />
             )}
           </div>

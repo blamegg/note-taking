@@ -1,3 +1,4 @@
+"use client";
 import Box from "@mui/material/Box";
 import Modal from "@mui/material/Modal";
 import { getAuth, sendPasswordResetEmail } from "firebase/auth";

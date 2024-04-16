@@ -95,6 +95,8 @@ const ResetNotesPassword = () => {
               name="password"
               id="name"
               type="password"
+              value={newPassword.password}
+              placeholder="password@123"
               onChange={handleChange}
               className="w-full border-b-2 border-gray-400 py-2 placeholder-gray-300 outline-none focus:border-green-400"
             />
@@ -107,6 +109,8 @@ const ResetNotesPassword = () => {
               name="renterPassword"
               id="name"
               type="password"
+              placeholder="password@123"
+              value={newPassword.renterPassword}
               onChange={handleChange}
               className="w-full border-b-2 border-gray-400 py-2 placeholder-gray-300 outline-none focus:border-green-400"
             />

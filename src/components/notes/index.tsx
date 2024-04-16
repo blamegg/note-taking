@@ -163,11 +163,17 @@ export const AddNotes = () => {
     setNotes(orderNotes);
   };
 
-  const onEdit = (index: number) => {
+  const onEdit = (index: number, id: string) => {
     if (edit !== null) {
       return null;
     }
     setEdit(index);
+    console.log(id);
+    const editInfo = notes.find((e) => e.id === id);
+    setEditedInfo({
+      title: editInfo?.title,
+      description: editInfo?.description,
+    });
   };
 
   const onSaveButton = async (noteId: string) => {
@@ -305,6 +311,7 @@ export const AddNotes = () => {
             onEdit={onEdit}
             onSaveButton={onSaveButton}
             handleEditChange={handleEditChange}
+            editedInfo={editedInfo}
             edit={edit}
           />
         ))}

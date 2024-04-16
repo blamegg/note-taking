@@ -2,7 +2,7 @@
 import { AddNotes } from "@/components";
 import { CustomLayout } from "@/components";
 import { useRouter } from "next/navigation";
-import { useContext} from "react";
+import { useContext } from "react";
 import { userContext } from "@/authContext/AuthContext";
 
 const Home = () => {
@@ -14,11 +14,7 @@ const Home = () => {
     return null;
   }
 
-  return (
-    <CustomLayout>
-      <AddNotes />
-    </CustomLayout>
-  );
+  return <CustomLayout> gg {/* <AddNotes /> */}</CustomLayout>;
 };
 
 export default Home;

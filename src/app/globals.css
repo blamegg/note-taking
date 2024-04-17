@@ -4,7 +4,7 @@
 
 /* width */
 ::-webkit-scrollbar {
-  width: 5px;
+  width: 7px;
 }
 
 /* Track */
@@ -15,4 +15,29 @@
 /* Handle */
 ::-webkit-scrollbar-thumb {
   background: #6366f1;
+}
+
+.loading {
+  background-color: greenyellow;
+  width: 100vw;
+  height: 100vh;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  font-size: 2em;
+  font-weight: bold;
+}
+
+.loading span {
+  animation: fadeIn 0.5s infinite linear alternate;
+}
+
+@keyframes fadeIn {
+  0% {
+    opacity: 0.2;
+  }
+
+  100% {
+    opacity: 1;
+  }
 }

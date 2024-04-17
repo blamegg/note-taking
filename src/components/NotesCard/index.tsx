@@ -11,34 +11,61 @@ interface INotesCard {
   noteDetails: INote;
   deleteNote: (id: string) => Promise<void>;
   updatePin: (id: string) => Promise<void>;
+  fetchNotes: () => any;
+  index: number;
   onEdit: (index: number, id: string) => null | undefined;
   edit: number | null;
-  index: number;
   handleEditChange: (event: ChangeEvent<HTMLInputElement>) => void;
   onSaveButton: (noteId: string) => Promise<void>;
   editedInfo: {
-    title: "";
-    description: "";
+    title: string; // Corrected the type
+    description: string; // Corrected the type
   };
 }
+
+// notes.tsx
+// Remove the 'edit' state and related functions from AddNotes component
+
+// notescard.tsx
+// Add 'edit' state and related functions to NotesCard component
+import { useState } from "react";
 
 export const NotesCard = ({
   noteDetails,
   deleteNote,
   updatePin,
   index,
-  onEdit,
-  handleEditChange,
-  edit,
   onSaveButton,
-  editedInfo,
 }: INotesCard) => {
+  const [edit, setEdit] = useState<boolean>(false);
+  const [editedInfo, setEditedInfo] = useState<{
+    title: string;
+    description: string;
+  }>({
+    title: noteDetails.title,
+    description: noteDetails.description,
+  });
+
+  const toggleEdit = () => {
+    setEdit(!edit);
+  };
+
+  const handleSave = () => {
+    onSaveButton(noteDetails.id, editedInfo);
+    setEdit(false);
+  };
+
+  const handleEditChange = (event: any) => {
+    const { name, value } = event.target;
+    setEditedInfo((prev) => ({ ...prev, [name]: value }));
+  };
+
   return (
     <div
       className={`border-2 border-gray-300 rounded-lg p-5 shadow-md ${noteDetails.bgColor}`}
     >
       <div>
-        {edit === index ? (
+        {edit ? (
           <div className="mb-5">
             <TextField
               id="outlined-basic"
@@ -64,7 +91,7 @@ export const NotesCard = ({
             )}
           </div>
         )}
-        {edit === index ? (
+        {edit ? (
           <TextField
             id="outlined-basic"
             label="description"
@@ -93,15 +120,15 @@ export const NotesCard = ({
             <TbPinned className="h-5 w-5 text-white" />
           </div>
           <div className="rounded-full bg-black p-1 cursor-pointer">
-            {edit === index ? (
+            {edit ? (
               <MdOutlineModeEdit
                 className="h-5 w-5 text-white"
-                onClick={() => onSaveButton(noteDetails.id)}
+                onClick={handleSave}
               />
             ) : (
               <MdOutlineModeEdit
                 className="h-5 w-5 text-white"
-                onClick={() => onEdit(index, noteDetails.id)}
+                onClick={toggleEdit}
               />
             )}
           </div>

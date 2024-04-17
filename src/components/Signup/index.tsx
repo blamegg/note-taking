@@ -13,6 +13,12 @@ export const Signup = () => {
   const [match, setMatch] = useState("");
   const [passwordErrors, setPasswordErrors] = useState<string[]>([]);
   const [passwordSuggestions, setPasswordSuggestions] = useState<string[]>([]);
+  const [passwordValidation, setPasswordValidation] = useState({
+    length: false,
+    upperCase: false,
+    numeric: false,
+    match: false,
+  });
 
   const { customCreateAccount, customGooglePopUp, customGitHubPopUp, session } =
     useContext(userContext);
@@ -36,12 +42,15 @@ export const Signup = () => {
 
       if (value.length < 10) {
         errors.push("Password must be at least 10 characters long");
+        setPasswordValidation((prev) => ({ ...prev, length: true }));
       }
       if (!/[A-Z]/.test(value)) {
         errors.push("Password must contain at least one uppercase letter");
+        setPasswordValidation((prev) => ({ ...prev, upperCase: true }));
       }
       if (!/[0-9]/.test(value)) {
         errors.push("Password must contain at least one number");
+        setPasswordValidation((prev) => ({ ...prev, numeric: true }));
       }
       if (value.length > 0 && value.length < 8) {
         suggestions.push(
@@ -55,7 +64,6 @@ export const Signup = () => {
   };
 
   const handleSubmit = (event: FormEvent<HTMLFormElement>) => {
-   
     event.preventDefault();
     if (
       userData.displayName === "" ||

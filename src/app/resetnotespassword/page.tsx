@@ -1,14 +1,20 @@
 "use client";
-import { userContext } from "@/authContext/AuthContext";
-import { getAuth, updatePassword } from "firebase/auth";
 import { ChangeEvent, useContext, useState } from "react";
 import { confirmPasswordReset } from "firebase/auth";
 import { auth } from "@/firebase/config";
 import { useRouter, useSearchParams } from "next/navigation";
+import { FaCheck } from "react-icons/fa6";
 
 interface INewPassword {
   password: string;
   renterPassword: string;
+}
+
+interface IPasswordValidation {
+  length: boolean;
+  upperCase: boolean;
+  numeric: boolean;
+  match: boolean;
 }
 
 const ResetNotesPassword = () => {
@@ -16,8 +22,12 @@ const ResetNotesPassword = () => {
     password: "",
     renterPassword: "",
   });
-  const [passwordErrors, setPasswordErrors] = useState<string[]>([]);
-  const [passwordSuggestions, setPasswordSuggestions] = useState<string[]>([]);
+  const [passwordValidation, setPasswordValidation] = useState({
+    length: true,
+    upperCase: true,
+    numeric: true,
+    match: true,
+  });
   const searchParams = useSearchParams();
   const router = useRouter();
 
@@ -34,25 +44,22 @@ const ResetNotesPassword = () => {
     setNewPassword((prevState) => ({ ...prevState, [name]: value }));
 
     if (name === "password") {
-      const errors: string[] = [];
-      const suggestions: string[] = [];
-
-      if (value.length < 10) {
-        errors.push("Password must be at least 10 characters long");
-      }
-      if (!/[A-Z]/.test(value)) {
-        errors.push("Password must contain at least one uppercase letter");
-      }
-      if (!/[0-9]/.test(value)) {
-        errors.push("Password must contain at least one number");
-      }
-      if (value.length > 0 && value.length < 8) {
-        suggestions.push(
-          "Consider using a longer password for better security"
-        );
-      }
-      setPasswordErrors(errors);
-      setPasswordSuggestions(suggestions);
+      const length = value.length >= 10;
+      const upperCase = /[A-Z]/.test(value);
+      const numeric = /[0-9]/.test(value);
+      const match = value === newPassword.renterPassword;
+      setPasswordValidation({
+        length,
+        upperCase,
+        numeric,
+        match,
+      });
+    } else if (name === "renterPassword") {
+      const match = value === newPassword.password;
+      setPasswordValidation((prevState) => ({
+        ...prevState,
+        match,
+      }));
     }
   };
 
@@ -73,9 +80,31 @@ const ResetNotesPassword = () => {
     router.push("login");
   };
 
+  const errorSuggestion: {
+    title: keyof IPasswordValidation;
+    errorMessage: string;
+  }[] = [
+    {
+      title: "length",
+      errorMessage: "Password must be at least 10 characters long",
+    },
+    {
+      title: "upperCase",
+      errorMessage: "Password must contain at least one uppercase letter",
+    },
+    {
+      title: "numeric",
+      errorMessage: "Password must contain at least one number",
+    },
+    {
+      title: "match",
+      errorMessage: "Passwords don't match, check again",
+    },
+  ];
+
   return (
     <div className="grid place-items-center">
-      <div className="w-[80%] md:w-[40%] lg:w-[30%] mt-16 bg-white py-10 px-10 rounded-xl">
+      <div className="xl:w-[40%] lg:w-[38%] mt-16 bg-white py-10 px-10 rounded-xl">
         <div className="mx-auto w-40 h-20">
           <img
             src="https://static.stayjapan.com/assets/top/icon/values-7dd5c8966d7a6bf57dc4bcd11b2156e82a4fd0da94a26aecb560b6949efad2be.svg"
@@ -115,15 +144,19 @@ const ResetNotesPassword = () => {
               className="w-full border-b-2 border-gray-400 py-2 placeholder-gray-300 outline-none focus:border-green-400"
             />
           </div>
-          {passwordErrors.map((error, index) => (
-            <p key={index} className="text-sm text-red-500">
-              {error}
-            </p>
-          ))}
-          {passwordSuggestions.map((suggestion, index) => (
-            <p key={index} className="text-sm text-gray-500">
-              {suggestion}
-            </p>
+          {errorSuggestion.map((suggestion, index) => (
+            <div className="flex gap-2" key={suggestion.title}>
+              <p
+                className={`text-sm ${
+                  passwordValidation[suggestion.title]
+                    ? "text-green-500"
+                    : "text-red-500"
+                }`}
+              >
+                {suggestion.errorMessage}
+              </p>
+              {passwordValidation[suggestion.title] && <FaCheck />}
+            </div>
           ))}
           <div className="p-4 mx-8 mt-2 flex justify-center">
             <div className="relative inline-flex group">
